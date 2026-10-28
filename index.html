@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maxfiy syurpriz</title>
+<style>
+:root{--pink:#f472b6;--violet:#a78bfa;--blue:#93c5fd;--gold:#fde68a;--red:#f87171}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
+html,body{height:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:#fff;background:linear-gradient(135deg,#140a24 0%,#3b0764 25%,#831843 50%,#1e1b4b 75%,#0b1224 100%);background-size:400% 400%;animation:bgShift 22s ease infinite;overflow:hidden}
+@keyframes bgShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.45;z-index:0;animation:float 16s ease-in-out infinite}
+.b1{width:340px;height:340px;background:#c026d3;top:-80px;left:-80px}
+.b2{width:300px;height:300px;background:#2563eb;bottom:-60px;right:-60px;animation-delay:-5s}
+.b3{width:240px;height:240px;background:#ec4899;top:40%;left:55%;animation-delay:-9s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-30px) scale(1.1)}}
+#redflash{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(circle,rgba(248,113,113,.35),rgba(127,29,29,.6))}
+#redflash.on{opacity:1}
+
+.screen{position:fixed;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(30px) scale(.97);transition:opacity .7s ease,transform .7s ease,visibility .7s}
+.screen.active{opacity:1;visibility:visible;transform:none}
+
+.card{width:100%;max-width:560px;text-align:center;padding:clamp(28px,5vw,48px);background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.18);border-radius:28px;box-shadow:0 25px 70px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2);animation:rise .9s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.kicker{font-size:.8rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);opacity:.9;margin-bottom:14px}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(1.7rem,6vw,2.9rem);line-height:1.15;background:linear-gradient(120deg,#fff,#f9a8d4,#c4b5fd,#fff);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:250% center}}
+.lead{font-size:clamp(1rem,2.8vw,1.12rem);line-height:1.7;color:rgba(255,255,255,.88);margin-top:18px}
+
+.btn{position:relative;display:inline-block;min-width:200px;padding:14px 28px;border:none;border-radius:999px;color:#fff;font-size:1rem;font-weight:600;letter-spacing:.02em;cursor:pointer;background:linear-gradient(120deg,#f472b6,#a78bfa,#60a5fa,#f472b6);background-size:300% 100%;animation:btnGrad 6s linear infinite;box-shadow:0 0 22px rgba(244,114,182,.5);transition:transform .25s ease,box-shadow .25s ease}
+@keyframes btnGrad{to{background-position:300% 0}}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 32px rgba(244,114,182,.75),0 0 60px rgba(167,139,250,.4)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;animation:none;box-shadow:none;border:1px solid rgba(255,255,255,.35)}
+.btn.ghost:hover{background:rgba(255,255,255,.1);box-shadow:0 0 24px rgba(255,255,255,.25)}
+
+.input{width:100%;padding:14px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:1.05rem;outline:none;transition:border-color .3s,box-shadow .3s}
+.input::placeholder{color:rgba(255,255,255,.45)}
+.input:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(167,139,250,.3),0 0 22px rgba(167,139,250,.35)}
+.input.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(248,113,113,.35),0 0 24px rgba(248,113,113,.55)}
+.pwrap{position:relative;margin-top:26px}
+.pwrap .input{padding-right:124px}
+.toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:8px 14px;border:none;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;font-size:.85rem;cursor:pointer}
+.toggle:hover{background:rgba(255,255,255,.24)}
+.msg{min-height:24px;margin:14px 0 4px;color:#fecaca;font-size:.95rem;line-height:1.5}
+.counter{min-height:20px;font-size:.85rem;color:rgba(255,255,255,.6)}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-8px)}80%{transform:translateX(6px)}}
+.shake{animation:shake .5s ease}
+
+.orb{width:70px;height:70px;margin:0 auto 18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#f0abfc 30%,#7c3aed 75%);animation:pulse 3s ease-in-out infinite}
+.orb.small{width:52px;height:52px;margin-bottom:12px}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 30px rgba(240,171,252,.5)}50%{transform:scale(1.08);box-shadow:0 0 60px rgba(240,171,252,.9)}}
+
+/* Name modal */
+.modal{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,5,25,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s}
+.modal.open{opacity:1;visibility:visible}
+.modal .card{animation:none}
+.modal.open .card{animation:rise .7s ease both}
+
+/* Door */
+.door{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .6s ease}
+.door.show{opacity:1}
+.half{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(160deg,#2e1065,#701a75 55%,#1e1b4b);transition:transform 1.4s cubic-bezier(.7,0,.2,1)}
+.half.l{left:0;border-right:2px solid rgba(253,230,138,.7);box-shadow:inset -20px 0 40px rgba(0,0,0,.4)}
+.half.r{right:0;border-left:2px solid rgba(253,230,138,.7);box-shadow:inset 20px 0 40px rgba(0,0,0,.4)}
+.door.open .half.l{transform:translateX(-100%)}
+.door.open .half.r{transform:translateX(100%)}
+
+/* Quiz */
+.quiz-wrap{width:min(560px,100%)}
+.progress-text{font-size:.85rem;letter-spacing:.2em;color:var(--gold);margin-bottom:10px;text-align:right}
+.progress{width:100%;height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin-bottom:18px}
+.fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--violet),var(--blue));box-shadow:0 0 14px rgba(244,114,182,.6);transition:width .6s ease}
+.qnum{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.qtext{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.2rem,4vw,1.6rem);line-height:1.4;margin-bottom:24px}
+.opts{display:grid;gap:12px}
+.opt{width:100%;text-align:left;padding:16px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-size:1rem;cursor:pointer;transition:transform .25s,background .25s,box-shadow .25s,border-color .25s,opacity .4s}
+.opt:hover:not(:disabled){transform:translateY(-2px);background:rgba(255,255,255,.14);box-shadow:0 0 18px rgba(244,114,182,.35)}
+.opt.chosen{background:linear-gradient(120deg,rgba(244,114,182,.45),rgba(167,139,250,.45));border-color:var(--gold);box-shadow:0 0 22px rgba(253,230,138,.35)}
+.opt.dim{opacity:.4}
+.opt:disabled{cursor:default}
+.reaction{margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(253,230,138,.1);border:1px dashed rgba(253,230,138,.5);color:#fef3c7;line-height:1.6;animation:rise .5s ease both}
+.reaction .btn{margin-top:18px}
+
+/* Gift */
+.gift{position:relative;width:170px;height:150px;margin:26px auto 8px}
+.gift .box{position:absolute;bottom:0;left:10px;right:10px;height:100px;border-radius:12px;background:linear-gradient(145deg,#f9a8d4,#a78bfa 60%,#60a5fa);box-shadow:0 0 40px rgba(244,114,182,.45),inset 0 0 20px rgba(255,255,255,.2);transition:box-shadow .8s ease}
+.gift .ribbon{position:absolute;top:32px;bottom:0;left:50%;width:18px;margin-left:-9px;background:rgba(253,230,138,.9);z-index:2}
+.gift .lid{position:absolute;top:30px;left:0;right:0;height:38px;border-radius:10px;background:linear-gradient(145deg,#fbcfe8,#c4b5fd);z-index:3;transform-origin:50% 100%;transition:transform 1s cubic-bezier(.3,1.4,.5,1)}
+.gift.opened .lid{transform:translateY(-90px) rotate(-22deg)}
+.gift.opened .box{box-shadow:0 0 70px rgba(253,230,138,.8),0 0 40px rgba(244,114,182,.6)}
+.gift-msg{margin-top:20px;padding:22px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(253,230,138,.35);line-height:1.8;font-size:1.05rem;color:#fff7ed;animation:rise .9s ease both}
+.sign{margin-top:18px;color:var(--gold);font-style:italic;animation:rise .9s ease both}
+
+@media (max-width:480px){
+  .btn{width:100%;min-width:0}
+  .card{border-radius:22px}
+  .pwrap .input{padding-right:110px}
+}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<canvas id="fx"></canvas>
+<div id="redflash"></div>
+
+<!-- 1-BOSQICH: KIRISH -->
+<section class="screen active" id="screen-gate">
+  <div class="card">
+    <div class="orb"></div>
+    <div class="kicker">Maxfiy hudud</div>
+    <h1>TO‘XTANG! BU ODDIY SAYT EMAS.</h1>
+    <p class="lead">Bu yerda seni kutayotgan maxsus syurpriz bor. Ammo hamma ham kira olmaydi.</p>
+    <div style="margin-top:34px">
+      <button class="btn" id="openBtn">Maxfiy eshikni ochish</button>
+    </div>
+  </div>
+</section>
+
+<!-- 1-BOSQICH: ISM MODALI -->
+<div class="modal" id="modal">
+  <div class="card">
+    <div class="kicker">Tekshiruv</div>
+    <p class="lead" style="margin-top:0">Avval kimligingni isbotla. Isming nima?</p>
+    <div style="margin-top:22px">
+      <input type="text" class="input" id="nameInput" placeholder="Ismingni yoz" autocomplete="off">
+    </div>
+    <p class="msg" id="nameMsg"></p>
+    <p class="counter" id="nameCount"></p>
+    <div style="margin-top:14px">
+      <button class="btn" id="nameBtn">Davom etish</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2-BOSQICH: PAROL -->
+<section class="screen" id="screen-pass">
+  <div class="card">
+    <div class="orb small"></div>
+    <div class="kicker">Ikkinchi qadam</div>
+    <p class="lead" style="margin-top:0">Yaxshi, seni tanidik. Lekin bu hali hammasi emas...</p>
+    <p class="lead" style="margin-top:10px">Endi maxfiy kalitni topishing kerak.</p>
+    <div class="pwrap">
+      <input type="password" class="input" id="passInput" placeholder="Maxfiy kalit" autocomplete="off">
+      <button type="button" class="toggle" id="toggleBtn">Ko‘rsatish</button>
+    </div>
+    <p class="msg" id="passMsg"></p>
+    <p class="counter" id="passCount"></p>
+    <div style="margin-top:14px">
+      <button class="btn" id="passBtn">Eshikni ochish</button>
+    </div>
+  </div>
+</section>
+
+<!-- Eshik animatsiyasi -->
+<div class="door" id="door">
+  <div class="half l"></div>
+  <div class="half r"></div>
+</div>
+
+<!-- 3-BOSQICH: KUTIB OLISH -->
+<section class="screen" id="screen-welcome">
+  <div class="card">
+    <div class="kicker">Tasdiqlandi</div>
+    <h1>NIHOYAT, SEN KELDING!</h1>
+    <p class="lead">29-oktabr uchun maxsus tayyorlangan kichkina syurprizga xush kelibsan. Bu sahifaga kirish oson bo‘lmadi, endi esa seni bir nechta kulgili sinovlar kutmoqda.</p>
+    <div style="margin-top:32px">
+      <button class="btn" id="startBtn">Syurprizni boshlash</button>
+    </div>
+  </div>
+</section>
+
+<!-- 4-BOSQICH: SAVOLLAR -->
+<section class="screen" id="screen-quiz">
+  <div class="quiz-wrap">
+    <div class="progress-text" id="progressText"></div>
+    <div class="progress"><div class="fill" id="progressFill"></div></div>
+    <div class="card" id="quizBox"></div>
+  </div>
+</section>
+
+<!-- 5-BOSQICH: YASHIRIN SYURPRIZ -->
+<section class="screen" id="screen-final">
+  <div class="card">
+    <div class="kicker">Oxirgi sir</div>
+    <h1>Sen barcha sinovlardan o‘tding.</h1>
+    <p class="lead">Endi oxirgi sirni ochish vaqti keldi.</p>
+
+    <div class="gift" id="giftBox">
+      <div class="ribbon"></div>
+      <div class="box"></div>
+      <div class="lid"></div>
+    </div>
+
+    <div id="revealWrap">
+      <button class="btn" id="revealBtn">Sirni ochish</button>
+    </div>
+
+    <div class="gift-msg" id="giftMsg" hidden>
+      <p>29-oktabr — bugun oddiy kun bo‘lib qolmasin. Kuning quvonchli, kayfiyating ajoyib, tabassuming esa doimiy bo‘lsin. Hayotingda yaxshi insonlar, yoqimli xabarlar va esda qolarli lahzalar ko‘paysin. Eng muhimi, o‘zingga xosligingni saqla va ko‘proq kul!</p>
+    </div>
+    <p class="sign" id="giftNote" hidden>Bu syurpriz aynan sen uchun tayyorlandi.</p>
+    <div style="margin-top:22px">
+      <button class="btn ghost" id="replayBtn" hidden>Boshidan yana o‘ynash</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ===================== SOZLAMALAR ===================== */
+const CONFIG = {
+  name: "Mohidil",       // To‘g‘ri ism (katta-kichik harf farqi yo‘q)
+  password: "Ajina"      // Maxfiy parol (katta-kichik harfga sezgir)
+};
+
+/* ===================== SUPABASE (javoblarni saqlash) ===================== */
+const SUPABASE_URL = "https://ysulpmbcuapkcevdvurf.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_V7tNfqZLp1WUXOCwWDRA4Q_YHPmVkDc";
+const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function logEvent(data) {
+  fetch(`${SUPABASE_URL}/rest/v1/answers`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_PUBLISHABLE_KEY,
+      "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify({
+      session: SESSION_ID,
+      device: navigator.userAgent,
+      step: data.step,
+      question_no: data.no || null,
+      answer: data.answer || null,
+      comment: data.comment || null
+    })
+  }).catch(() => {});
+}
+
+/* ===================== SAVOLLAR ===================== */
+const QUESTIONS = [
+  {
+    q: "Agar senga bugun bir million dollar berishsa, birinchi nima qilarding?",
+    opts: [
+      { t: "Shirinlik sotib olaman.", r: "Shirinlik tanlovi ajoyib! Diyetni keyinroq o‘ylaymiz." },
+      { t: "Avval uxlab, keyin reja tuzaman.", r: "Juda oqilona. Pul ham dam olishni yaxshi ko‘radi." },
+      { t: "Pulni qayta-qayta sanayman.", r: "Tabiiy holat. Sanash kayfiyatni ko‘taradi, pul esa o‘zi ko‘paymaydi." },
+      { t: "Hech kimga aytmayman.", r: "Sir saqlash mahorati yuqori! Hatto pul ham bu javobdan xursand bo‘ldi." }
+    ]
+  },
+  {
+    q: "Telefoning sen haqingda gapira olsa, nima derdi?",
+    opts: [
+      { t: "“Iltimos, meni biroz tinch qo‘y!”", r: "Telefon ham charchagan ekan. Xo‘p, uni tinch qo‘yamiz." },
+      { t: "“Yana kimning profilini ko‘ryapsan?”", r: "Telefon sening profiling bilan tanish bo‘lib ketdi, shekilli." },
+      { t: "“Zaryadimni ham o‘yla!”", r: "Zaryad haqidagi qayg‘u haqiqiy. Zaryadlagichni darhol toping!" },
+      { t: "“Men juda ko‘p sirlarni bilaman.”", r: "Telefon ham seni ehtiyot qilishni boshlaydi. Sir saqlash bu yerda kuchli." }
+    ]
+  },
+  {
+    q: "Agar bir kunga direktor bo‘lib qolsang, nima qilarding?",
+    opts: [
+      { t: "Hammaga dam beraman.", r: "Dam berish eng yaxshi rahbarlik. Jamoa juda xursand!" },
+      { t: "Uy vazifalarini bekor qilaman.", r: "Qaror qabul qilindi! Bu tashabbusni hech kim unutmaydi." },
+      { t: "Oshxonaga bepul shirinlik buyurtma qilaman.", r: "Ofis uchun mukammal tashabbus. Shirinlik hamma muammoni yengillashtiradi." },
+      { t: "Avval o‘zimga mukofot beraman.", r: "Rahbarlikning birinchi qoidasi: avval o‘zingni e’zozla. Juda to‘g‘ri!" }
+    ]
+  },
+  {
+    q: "Kayfiyating tushib qolsa, qaysi usulni tanlaysan?",
+    opts: [
+      { t: "Mazali ovqat.", r: "Mazali ovqat eng ishonchli davo. Oshpaz ham tabriklaydi!" },
+      { t: "Musiqa va dam olish.", r: "Musiqa va sokinlik kayfiyatning eng yumshoq qahramoni." },
+      { t: "Kulgili suhbat.", r: "Kulgili suhbat eng tez ishlaydigan dori. Kimdir seni kuldirsin!" },
+      { t: "Hech kim tegmasa, o‘zi tiklanadi.", r: "Kuchli iroda! Lekin baribir, biz yordam berishga tayyormiz." }
+    ]
+  },
+  {
+    q: "Agar fikrlaringni hamma eshita olsa, qancha vaqt sir saqlay olarding?",
+    opts: [
+      { t: "Bir kun.", r: "Ishonchli javob. Sirlar bir kun ichida ham shunday uchib ketadi." },
+      { t: "Bir soat.", r: "Mo‘tadil va xavfsiz tanlov. Hammasi nazorat ostida." },
+      { t: "Besh daqiqa.", r: "Tezkor axborot! Demak, sirlaringni bu sahifada saqlash kerak." },
+      { t: "Men darhol boshqa sayyoraga ketaman.", r: "Jiddiy javob! Biz seni Yerda kutamiz." }
+    ]
+  },
+  {
+    q: "Agar hayoting film bo‘lsa, uning nomi nima bo‘lardi?",
+    opts: [
+      { t: "“Rejalar bor, lekin ertaga”.", r: "Eng real kino nomi! Premyera ertaga, albatta." },
+      { t: "“Men va mening omadim”.", r: "Qiziqarli bosh qahramon. Omad ham unga qarab turibdi." },
+      { t: "“Hammasi nazorat ostida... shekilli”.", r: "Janr: komediya. Tomoshabinlar allaqachon kulmoqda." },
+      { t: "“Bosh qahramon yana kech qoldi”.", r: "Klassik sahna! Tomoshabinlar bu qismni yaxshi ko‘radi." }
+    ]
+  },
+  {
+    q: "Bugun seni nima eng ko‘p xursand qiladi?",
+    opts: [
+      { t: "Kutilmagan sovg‘a.", r: "Eng yaxshi sirli sevinch. Sovg‘a ham shu yerda kutib turibdi." },
+      { t: "Yaxshi xabar.", r: "Yaxshi xabar kunni boshidan yorqin qiladi. Xabar ham yo‘lda!" },
+      { t: "Mazali taom.", r: "Oshqozon eng sodiq do‘st ekan. Taom tanlovi juda to‘g‘ri." },
+      { t: "Kimdir meni kuldirsa bo‘ldi.", r: "Ajoyib maqsad! Bu sahifa ham shu maqsadda yaratilgan." }
+    ]
+  },
+  {
+    q: "Eng muhim savol: bu saytdan keyin kayfiyating ko‘tarildimi?",
+    opts: [
+      { t: "Ha, missiya muvaffaqiyatli!", r: "Missiya bajarildi! Tabriklaymiz, sen sinovdan muvaffaqiyatli o‘tding." },
+      { t: "Biroz, yana kuldirishga urin.", r: "Demak, yana bir sahna kerak. Oxirgi sirga tayyormisan?" },
+      { t: "Men boshidan beri zo‘r kayfiyatdaman.", r: "Bu eng yaxshi natija! Kayfiyatingni shunday saqla." },
+      { t: "Syurprizning ikkinchi qismini ham ko‘rsat!", r: "Ikkinchi qism sirli. Oxirgi sirni ochishga tayyormisan?" }
+    ]
+  }
+];
+
+/* ===================== HOLAT ===================== */
+let nameAttempts = 0;
+let passAttempts = 0;
+let qIndex = 0;
+
+const $ = id => document.getElementById(id);
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
+}
+function shake(el) {
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+}
+function flashRed() {
+  const f = $("redflash");
+  f.classList.add("on");
+  setTimeout(() => f.classList.remove("on"), 900);
+}
+function normalize(s) {
+  return s.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/* ===================== ISM ===================== */
+$("openBtn").addEventListener("click", () => {
+  $("modal").classList.add("open");
+  setTimeout(() => $("nameInput").focus(), 400);
+});
+
+function checkName() {
+  const input = $("nameInput");
+  const val = input.value;
+  logEvent({ step: "ism", answer: val });
+
+  if (normalize(val) === normalize(CONFIG.name) && val.trim() !== "") {
+    input.classList.remove("error");
+    $("nameMsg").textContent = "";
+    $("nameCount").textContent = "";
+    input.value = "";
+    $("modal").classList.remove("open");
+    setTimeout(() => show("screen-pass"), 500);
+    return;
+  }
+
+  nameAttempts++;
+  input.classList.add("error");
+  shake(input);
+  flashRed();
+  $("nameMsg").textContent = val.trim() === ""
+    ? "Avval ismingni yoz."
+    : "Hmm... bu ism maxfiy ro‘yxatda yo‘q. Yana bir bor urinib ko‘r!";
+  $("nameCount").textContent = "Urinishlar: " + nameAttempts;
+}
+
+$("nameBtn").addEventListener("click", checkName);
+$("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") checkName(); });
+$("nameInput").addEventListener("input", () => $("nameInput").classList.remove("error"));
+
+/* ===================== PAROL ===================== */
+$("toggleBtn").addEventListener("click", () => {
+  const p = $("passInput");
+  const hidden = p.type === "password";
+  p.type = hidden ? "text" : "password";
+  $("toggleBtn").textContent = hidden ? "Yashirish" : "Ko‘rsatish";
+});
+
+function checkPass() {
+  const input = $("passInput");
+  logEvent({ step: "parol", answer: input.value });
+  if (input.value.trim() === CONFIG.password) {
+    input.classList.remove("error");
+    $("passMsg").textContent = "";
+    $("passCount").textContent = "";
+    openDoor();
+    return;
+  }
+  passAttempts++;
+  input.classList.add("error");
+  shake(input);
+  flashRed();
+  $("passMsg").textContent = "Parol noto‘g‘ri! Syurpriz hali o‘z egasini kutmoqda.";
+  $("passCount").textContent = "Urinishlar: " + passAttempts;
+}
+
+$("passBtn").addEventListener("click", checkPass);
+$("passInput").addEventListener("keydown", e => { if (e.key === "Enter") checkPass(); });
+$("passInput").addEventListener("input", () => $("passInput").classList.remove("error"));
+
+function openDoor() {
+  const door = $("door");
+  door.classList.add("show");
+  setTimeout(() => {
+    door.classList.add("open");
+    burst(window.innerWidth / 2, window.innerHeight / 2, 140);
+  }, 300);
+  setTimeout(() => {
+    show("screen-welcome");
+    door.classList.remove("show");
+  }, 1800);
+  setTimeout(() => door.classList.remove("open"), 2500);
+}
+
+/* ===================== KUTIB OLISH ===================== */
+$("startBtn").addEventListener("click", () => {
+  show("screen-quiz");
+  renderQ();
+});
+
+/* ===================== SAVOLLAR ===================== */
+function renderQ() {
+  const q = QUESTIONS[qIndex];
+  $("progressText").textContent = (qIndex + 1) + " / " + QUESTIONS.length;
+  $("progressFill").style.width = (qIndex / QUESTIONS.length * 100) + "%";
+
+  const box = $("quizBox");
+  box.innerHTML = "";
+  box.style.animation = "none";
+  void box.offsetWidth;
+  box.style.animation = "";
+
+  const num = document.createElement("div");
+  num.className = "qnum";
+  num.textContent = "Savol " + (qIndex + 1);
+
+  const text = document.createElement("h2");
+  text.className = "qtext";
+  text.textContent = q.q;
+
+  const wrap = document.createElement("div");
+  wrap.className = "opts";
+
+  q.opts.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.textContent = o.t;
+    b.addEventListener("click", () => choose(i));
+    wrap.appendChild(b);
+  });
+
+  box.appendChild(num);
+  box.appendChild(text);
+  box.appendChild(wrap);
+}
+
+function choose(i) {
+  const q = QUESTIONS[qIndex];
+  logEvent({ step: "savol", no: qIndex + 1, answer: q.opts[i].t, comment: q.opts[i].r });
+  const buttons = document.querySelectorAll(".opt");
+  buttons.forEach((b, k) => {
+    b.disabled = true;
+    if (k === i) b.classList.add("chosen");
+    else b.classList.add("dim");
+  });
+
+  const box = $("quizBox");
+  const reaction = document.createElement("div");
+  reaction.className = "reaction";
+
+  const p = document.createElement("p");
+  p.textContent = q.opts[i].r;
+  reaction.appendChild(p);
+
+  const next = document.createElement("button");
+  next.className = "btn";
+  next.textContent = qIndex === QUESTIONS.length - 1 ? "Yakunlash" : "Keyingi savol";
+  next.addEventListener("click", nextQ);
+  reaction.appendChild(next);
+
+  box.appendChild(reaction);
+  burst(window.innerWidth / 2, window.innerHeight * 0.45, 40);
+}
+
+function nextQ() {
+  qIndex++;
+  if (qIndex < QUESTIONS.length) {
+    renderQ();
+  } else {
+    $("progressFill").style.width = "100%";
+    $("progressText").textContent = QUESTIONS.length + " / " + QUESTIONS.length;
+    show("screen-final");
+  }
+}
+
+/* ===================== YASHIRIN SYURPRIZ ===================== */
+$("revealBtn").addEventListener("click", () => {
+  const gift = $("giftBox");
+  gift.classList.add("opened");
+  $("revealWrap").hidden = true;
+
+  const rect = gift.getBoundingClientRect();
+  burst(rect.left + rect.width / 2, rect.top + rect.height / 2, 170);
+
+  setTimeout(() => {
+    $("giftMsg").hidden = false;
+    $("giftNote").hidden = false;
+    $("replayBtn").hidden = false;
+  }, 900);
+});
+
+$("replayBtn").addEventListener("click", () => location.reload());
+
+/* ===================== FON ANIMATSIYASI (CANVAS) ===================== */
+const cv = $("fx");
+const ctx = cv.getContext("2d");
+let W = 0, H = 0;
+
+function resize() {
+  W = cv.width = window.innerWidth;
+  H = cv.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+const COLORS = ["#f0abfc", "#f472b6", "#a78bfa", "#93c5fd", "#fde68a", "#ffffff"];
+
+const stars = Array.from({ length: 110 }, () => ({
+  x: Math.random(), y: Math.random(), z: Math.random() * 0.8 + 0.2, t: Math.random() * Math.PI * 2
+}));
+
+function newMote() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 2.2 + 0.6,
+    vx: (Math.random() - 0.5) * 0.25,
+    vy: -(Math.random() * 0.3 + 0.05),
+    a: Math.random() * 0.6 + 0.2,
+    c: COLORS[Math.floor(Math.random() * COLORS.length)]
+  };
+}
+const motes = Array.from({ length: 45 }, newMote);
+const bursts = [];
+
+function burst(x, y, n = 120) {
+  for (let i = 0; i < n; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = Math.random() * 6 + 2;
+    bursts.push({
+      x, y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 1,
+      d: Math.random() * 0.015 + 0.008,
+      r: Math.random() * 3 + 1,
+      c: COLORS[Math.floor(Math.random() * COLORS.length)]
+    });
+  }
+}
+
+function frame() {
+  ctx.clearRect(0, 0, W, H);
+
+  for (const s of stars) {
+    s.t += 0.02;
+    s.y += 0.00008 * s.z;
+    if (s.y > 1) s.y = 0;
+    const tw = 0.5 + 0.5 * Math.sin(s.t);
+    ctx.globalAlpha = 0.25 + 0.6 * tw * s.z;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(s.x * W, s.y * H, s.z * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  for (const m of motes) {
+    m.x += m.vx;
+    m.y += m.vy;
+    if (m.y < -10) { m.y = H + 10; m.x = Math.random() * W; }
+    if (m.x < -10) m.x = W + 10;
+    if (m.x > W + 10) m.x = -10;
+    ctx.globalAlpha = m.a;
+    ctx.fillStyle = m.c;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = m.c;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  for (let i = bursts.length - 1; i >= 0; i--) {
+    const p = bursts[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.04;
+    p.vx *= 0.985;
+    p.life -= p.d;
+    if (p.life <= 0) { bursts.splice(i, 1); continue; }
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.c;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * p.life + 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

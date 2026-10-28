@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoring</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#0f0a1e;color:#eee;margin:0;padding:20px}
+  .box{max-width:1100px;margin:0 auto}
+  input,select,button{padding:10px 12px;border-radius:8px;border:1px solid #4b3f75;background:#1b1530;color:#fff;font-size:15px}
+  button{background:#a78bfa;color:#0f0a1e;border:none;cursor:pointer;font-weight:600}
+  button:hover{opacity:.9}
+  .row{display:grid;gap:10px;max-width:320px}
+  .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+  .top h2{margin:0 auto 0 0}
+  .err{color:#f87171;min-height:20px;font-size:14px}
+  .hide{display:none !important}
+  .stats{color:#c4b5fd;font-size:14px;margin:8px 0}
+  .wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+  th,td{padding:9px 8px;border-bottom:1px solid #2e2650;text-align:left;vertical-align:top}
+  th{color:#fde68a;font-weight:600}
+</style>
+</head>
+<body>
+<div class="box">
+
+  <!-- KIRISH -->
+  <div id="login">
+    <h2>Admin kirish</h2>
+    <div class="row">
+      <input id="email" type="email" placeholder="Email" autocomplete="username">
+      <input id="pw" type="password" placeholder="Parol" autocomplete="current-password">
+      <button id="loginBtn">Kirish</button>
+      <div class="err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- MONITORING -->
+  <div id="panel" class="hide">
+    <div class="top">
+      <h2>Javoblar</h2>
+      <select id="filter">
+        <option value="">Hammasi</option>
+        <option value="ism">Ism urinishlari</option>
+        <option value="parol">Parol urinishlari</option>
+        <option value="savol">Savol javoblari</option>
+      </select>
+      <button id="refresh">Yangilash</button>
+      <button id="logout">Chiqish</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="wrap">
+      <table>
+        <thead>
+          <tr><th>Vaqt</th><th>Sessiya</th><th>Qurilma</th><th>Bosqich</th><th>Savol</th><th>Javob</th><th>Izoh</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script>
+/* ===================== SOZLAMALAR ===================== */
+const SUPABASE_URL = "https://ysulpmbcuapkcevdvurf.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_V7tNfqZLp1WUXOCwWDRA4Q_YHPmVkDc";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const $ = id => document.getElementById(id);
+
+function showPanel() {
+  $("login").classList.add("hide");
+  $("panel").classList.remove("hide");
+  load();
+}
+
+async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) showPanel();
+}
+
+$("loginBtn").addEventListener("click", async () => {
+  $("loginErr").textContent = "";
+  const { error } = await sb.auth.signInWithPassword({
+    email: $("email").value.trim(),
+    password: $("pw").value
+  });
+  if (error) {
+    $("loginErr").textContent = "Email yoki parol noto‘g‘ri.";
+    return;
+  }
+  $("pw").value = "";
+  showPanel();
+});
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
+$("logout").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  location.reload();
+});
+
+$("refresh").addEventListener("click", load);
+$("filter").addEventListener("change", load);
+
+function shortDevice(ua) {
+  if (!ua) return "";
+  if (/iPhone/.test(ua)) return "iPhone";
+  if (/iPad/.test(ua)) return "iPad";
+  if (/Android/.test(ua)) return "Android";
+  if (/Windows/.test(ua)) return "Windows";
+  if (/Macintosh/.test(ua)) return "Mac";
+  return ua.slice(0, 40);
+}
+
+async function load() {
+  let q = sb.from("answers").select("*").order("created_at", { ascending: false }).limit(1000);
+  const f = $("filter").value;
+  if (f) q = q.eq("step", f);
+
+  const { data, error } = await q;
+  if (error) {
+    $("stats").textContent = "Xato: " + error.message;
+    return;
+  }
+
+  const rows = data || [];
+  const sessions = new Set(rows.map(r => r.session));
+  $("stats").textContent = "Jami yozuv: " + rows.length + "  |  Qurilmalar (sessiyalar): " + sessions.size;
+
+  const tb = $("rows");
+  tb.innerHTML = "";
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    const cells = [
+      r.created_at ? new Date(r.created_at).toLocaleString("uz-UZ") : "",
+      r.session,
+      shortDevice(r.device),
+      r.step,
+      r.question_no,
+      r.answer,
+      r.comment
+    ];
+    for (const v of cells) {
+      const td = document.createElement("td");
+      td.textContent = v == null ? "" : String(v);
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
